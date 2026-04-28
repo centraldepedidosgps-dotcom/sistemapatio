@@ -1,4 +1,4 @@
-import pyrebase
+import pyrebase4 as pyrebase
 
 config = {
     "apiKey": "AIzaSyB9HGNeqejP-_b-229r3U6giwMnxUZ2smU",
