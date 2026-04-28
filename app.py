@@ -530,4 +530,5 @@ def main(page: ft.Page):
     login()
 
 
-ft.app(target=main)
+PORT = int(os.environ.get("PORT", 8550))  # Porta fornecida pelo Render
+ft.app(target=main, port=PORT, view=ft.WEB_BROWSER)
