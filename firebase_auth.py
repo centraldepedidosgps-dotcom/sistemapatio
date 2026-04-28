@@ -1,7 +1,6 @@
 import firebase_admin
 from firebase_admin import auth as firebase_auth
 
-auth = firebase_auth
 
 config = {
     "apiKey": "AIzaSyB9HGNeqejP-_b-229r3U6giwMnxUZ2smU",
@@ -14,4 +13,4 @@ config = {
 }
 
 firebase = pyrebase.initialize_app(config)
-auth = firebase.auth()
+auth = firebase_auth
