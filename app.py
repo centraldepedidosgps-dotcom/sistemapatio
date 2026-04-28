@@ -529,8 +529,6 @@ def main(page: ft.Page):
 
     login()
 
-ft.app(
-    target=main,
-    host="0.0.0.0",
-    port=PORT
-)
+PORT = int(os.environ.get("PORT", 8550))
+
+ft.app(target=main, port=PORT)
