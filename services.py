@@ -1,4 +1,5 @@
 from firebase_config import db
+import time
 
 # ================= MOTORISTAS =================
 def listar_motoristas():
@@ -14,6 +15,9 @@ def listar_motoristas():
 
 
 def salvar_motorista(nome, uid):
+    if not nome or not uid:
+        return
+
     db.collection("motoristas").add({
         "nome": nome,
         "uid": uid,
@@ -21,7 +25,7 @@ def salvar_motorista(nome, uid):
         "disponivel": True,
         "em_servico": False,
         "vaga": None,
-        "ordem": int(__import__("time").time())
+        "ordem": int(time.time())
     })
 
 
@@ -52,8 +56,10 @@ def chamar_proximo():
         .where("em_servico", "==", False) \
         .stream()
 
-    for d in docs:
+    lista = sorted(docs, key=lambda d: d.to_dict().get("ordem", 0))
+
+    for d in lista:
         db.collection("motoristas").document(d.id).update({
             "status": "PATIO"
         })
-        return d.id  # chama só o primeiro disponível
+        return d.id
