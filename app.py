@@ -531,4 +531,9 @@ def main(page: ft.Page):
 
 PORT = int(os.environ.get("PORT", 8550))
 
-ft.app(target=main, port=PORT)
+ft.app(
+    target=main,
+    view=ft.AppView.WEB_SERVER,
+    port=PORT,
+    host="0.0.0.0"
+)
