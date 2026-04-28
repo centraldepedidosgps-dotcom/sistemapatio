@@ -298,6 +298,164 @@ def main(page: ft.Page):
         def listen_disp():
             def snap(col_snapshot, *_):
                 col_disp.controls.clear()
+                for d in col_snapshot:
+                    x = d.to_dict()
+                    col_disp.controls.append(
+                        ft.Container(
+                            padding=8,
+                            margin=3,
+                            bgcolor="#dbeafe",
+                            border_radius=8,
+                            content=ft.Row([
+                                ft.Text("📅 " + x["data"]),
+                                ft.Container(expand=True),
+                                ft.IconButton(
+                                    icon=ft.Icons.DELETE,
+                                    icon_color="red",
+                                    on_click=lambda e, v=x["data"]: excluir_disponibilidade(v)
+                                )
+                            ])
+                        )
+                    )
+                page.update()
+            add_listener(db.collection("disponibilidade").on_snapshot(snap))
+
+        def listen_presenca():
+            def snap(col_snapshot, *_):
+                col_presenca.controls.clear()
+                col_escala.controls.clear()
+                for d in col_snapshot:
+                    p = d.to_dict()
+                    turno = ft.Dropdown(options=[ft.dropdown.Option("AM"), ft.dropdown.Option("PM")], width=100)
+                    codigo = ft.TextField(label="Código", width=120)
+                    def enviar(e, p=p, turno=turno, codigo=codigo):
+                        if not turno.value or not codigo.value:
+                            msg("Preencha tudo")
+                            return
+                        adicionar_escala({
+                            "data": p["data"],
+                            "motorista_id": p["motorista_id"],
+                            "nome": p["nome"],
+                            "turno": turno.value,
+                            "codigo": codigo.value
+                        })
+                        msg("Adicionado na escala")
+                    col_presenca.controls.append(
+                        ft.Container(
+                            padding=10,
+                            margin=5,
+                            bgcolor="#fef3c7",
+                            border_radius=10,
+                            content=ft.Column([
+                                ft.Text(f"🚛 {p['nome']}"),
+                                ft.Text(f"📅 {p['data']}"),
+                                turno,
+                                codigo,
+                                ft.ElevatedButton("Enviar", on_click=enviar)
+                            ])
+                        )
+                    )
+                page.update()
+            add_listener(db.collection("presenca").on_snapshot(snap))
+
+        def listen_escala():
+            def snap(col_snapshot, *_):
+                col_escala.controls.clear()
+                for d in col_snapshot:
+                    e = d.to_dict()
+                    col_escala.controls.append(
+                        ft.Container(
+                            padding=10,
+                            margin=5,
+                            bgcolor="#dcfce7",
+                            border_radius=10,
+                            content=ft.Column([
+                                ft.Text(f"📅 {e['data']}"),
+                                ft.Text(f"🚛 {e['nome']}"),
+                                ft.Text(f"Turno: {e['turno']}"),
+                                ft.Text(f"Código: {e['codigo']}")
+                            ])
+                        )
+                    )
+                page.update()
+            add_listener(db.collection("escalas").on_snapshot(snap))
+
+        def listen_users():
+            def snap(col_snapshot, *_):
+                col_users.controls.clear()
+                for u in col_snapshot:
+                    user = u.to_dict()
+                    col_users.controls.append(
+                        ft.Container(
+                            padding=10,
+                            margin=5,
+                            bgcolor="#f3f4f6",
+                            border_radius=10,
+                            content=ft.Row([
+                                ft.Text(u.id),
+                                ft.Container(expand=True),
+                                ft.Text(user.get("tipo", "")),
+                                ft.ElevatedButton("Admin", on_click=lambda e, uid=u.id: promover_admin(uid))
+                            ])
+                        )
+                    )
+                page.update()
+            add_listener(db.collection("usuarios").on_snapshot(snap))
+
+        def criar(e):
+            if abrir_disponibilidade(data_input.value):
+                msg("Criado")
+            else:
+                msg("Já existe")
+
+        def reset(e):
+            resetar()
+            msg("Resetado")
+
+        listen_disp()
+        listen_presenca()
+        listen_escala()
+        listen_users()
+
+        # ================= LAYOUT =================
+        page.add(ft.Column([
+            ft.Row([
+                ft.Text(f"👨‍💼 ADMIN: {nome}", size=20),
+                ft.Container(expand=True),
+                ft.ElevatedButton("Logout", on_click=logout)
+            ]),
+            ft.Divider(),
+            ft.Column([
+                data_input,
+                ft.Row([
+                    ft.ElevatedButton("Criar", on_click=criar),
+                    ft.ElevatedButton("Reset", on_click=reset)
+                ])
+            ]),
+            ft.Divider(),
+            ft.Container(
+                content=ft.Row([
+                    box("📍 Disponibilidade", col_disp, "#dbeafe"),
+                    box("🚛 Presença", col_presenca, "#fef3c7"),
+                    box("📋 Escala", col_escala, "#dcfce7")
+                ], scroll=ft.ScrollMode.AUTO),
+                height=500
+            ),
+            ft.Divider(),
+            ft.Text("👥 Usuários"),
+            col_users
+        ]))
+
+    # ================= MOTORISTA =================
+    def motorista(uid, nome):
+        clear_listeners()
+        page.controls.clear()
+        col_disp = ft.Column(scroll=ft.ScrollMode.AUTO)
+        col_escala = ft.Column(scroll=ft.ScrollMode.AUTO)
+
+        def listen_disp():
+            def snap(col_snapshot, *_):
+                col_disp.controls.clear()
 
                 for d in col_snapshot:
                     x = d.to_dict()
