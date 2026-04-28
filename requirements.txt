@@ -1,4 +1,3 @@
 flet
-pyrebase4
-setuptools
 firebase-admin
+setuptools
